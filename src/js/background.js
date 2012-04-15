@@ -1,3 +1,4 @@
+var globaldatastore = {};
 $(document).ready(function () {
   console.log('Hello from Background Script');
 
@@ -23,7 +24,7 @@ $(document).ready(function () {
       i, l, url;
     for (i = 0, l = links.length; i < l; i += 1) {
       url = links[i];
-      if (url.indexOf('http://') === 0 || url.indexOf('https://')) {
+      if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
         cacheURL(url);
       }
     }
@@ -33,6 +34,6 @@ $(document).ready(function () {
 
 function cacheURL(url) {
   $.get(url, function (data) {
-    localStorage[url] = data;
+    globaldatastore[url] = data;
   });
 }
