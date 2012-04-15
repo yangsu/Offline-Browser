@@ -1,21 +1,17 @@
 var globaldatastore = {};
-$(document).ready(function () {
+$(document).ready(function() {
   console.log('Hello from Background Script');
 
   // Send request to current tab
-  sendRequest = function (data) {
-    chrome.tabs.getSelected(null, function (tab) {
+  sendRequest = function(data) {
+    chrome.tabs.getSelected(null, function(tab) {
       chrome.tabs.sendRequest(
-        tab.id,
-        data
-      );
+      tab.id, data);
     });
   };
 
-  chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
-    console.log(sender.tab ?
-                'from a content script:' + sender.tab.url :
-                'from the extension');
+  chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
+    console.log(sender.tab ? 'from a content script:' + sender.tab.url : 'from the extension');
     console.log(request.data);
     var tabid = sender.tab.id;
     if (request.type === 'url') {
@@ -61,7 +57,7 @@ $(document).ready(function () {
 
 function processStyleSheets(tabid, key, url) {
   if (!globaldatastore[tabid][key]) {
-    $.get(url, function (data) {
+    $.get(url, function(data) {
       console.log(url);
       console.log(data);
       globaldatastore[tabid][key] = {
@@ -75,7 +71,7 @@ function processStyleSheets(tabid, key, url) {
 
 function saveImage(tabid, key, imgurl) {
   if (!globaldatastore[tabid][key]) {
-    getImageDataURL(imgurl, function (dataurl) {
+    getImageDataURL(imgurl, function(dataurl) {
       globaldatastore[tabid][key] = {
         type: 'image',
         data: dataurl
@@ -86,7 +82,7 @@ function saveImage(tabid, key, imgurl) {
 
 function cacheURL(tabid, key, url) {
   if (!globaldatastore[tabid][key]) {
-    $.get(url, function (data) {
+    $.get(url, function(data) {
       var ext = url.substring(url.lastIndexOf('.') + 1);
       if (ext && ext.length === 3 && /jpg|png|gif/.test(ext)) {
         saveImage(tabid, key, url);
@@ -98,8 +94,7 @@ function cacheURL(tabid, key, url) {
 
         // Scan all images on the page
         var regex = /<img[^>]+src="([^"]+)"/g,
-          match,
-          imgkey;
+          match, imgkey;
         while (match = regex.exec(data)) {
           imgkey = match[1];
           // Avoid images that are already data urls
@@ -113,6 +108,8 @@ function cacheURL(tabid, key, url) {
 }
 
 // Convert various formats to full urls
+
+
 function fixurl(url, imgurl) {
   var prefix = '';
   if (imgurl.indexOf('http://') === 0 || imgurl.indexOf('https://') === 0) {
@@ -130,10 +127,11 @@ function fixurl(url, imgurl) {
 }
 
 // convert image from url to dataurl
+
+
 function getImageDataURL(url, success, error) {
-  var data, canvas, ctx,
-    img = new Image();
-  img.onload = function () {
+  var data, canvas, ctx, img = new Image();
+  img.onload = function() {
     canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
@@ -152,6 +150,6 @@ function getImageDataURL(url, success, error) {
   }
 }
 
-chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
   delete globaldatastore[tabId];
 });
