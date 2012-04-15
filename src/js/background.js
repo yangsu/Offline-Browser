@@ -1,4 +1,6 @@
 var globaldatastore = {};
+var recording = false;
+
 $(document).ready(function() {
   console.log('Hello from Background Script');
 
@@ -19,38 +21,42 @@ $(document).ready(function() {
         data: globaldatastore[tabid][request.data]
       });
     } else if (request.type === 'links') {
-      var links = request.data,
-        i, l, url;
 
-      if (!globaldatastore[tabid]) {
-        globaldatastore[tabid] = {};
-      }
+      if (recording) {
+        var links = request.data,
+          i, l, url;
 
-      // root will always have the correct url format. No need to check
-      cacheURL(tabid, links.root, links.root);
+        if (!globaldatastore[tabid]) {
+          globaldatastore[tabid] = {};
+        }
 
-      // process anchors
-      for (i = links.anchors.length - 1; i >= 0; i -= 1) {
-        url = links.anchors[i];
-        if (url.indexOf('#') !== 0) {
-          cacheURL(tabid, url, fixurl(links.root, url));
+        // root will always have the correct url format. No need to check
+        cacheURL(tabid, links.root, links.root);
+
+        // process anchors
+        for (i = links.anchors.length - 1; i >= 0; i -= 1) {
+          url = links.anchors[i];
+          if (url.indexOf('#') !== 0) {
+            cacheURL(tabid, url, fixurl(links.root, url));
+          }
+        }
+
+        // process images
+        for (i = links.images.length - 1; i >= 0; i -= 1) {
+          url = links.images[i];
+          // Avoid images that are already data urls
+          if (url.indexOf('data:image') === -1) {
+            saveImage(tabid, url, fixurl(links.root, url));
+          }
+        }
+
+        // process stylesheets
+        for (i = links.stylesheets.length - 1; i >= 0; i -= 1) {
+          url = links.stylesheets[i];
+          processStyleSheets(tabid, url, fixurl(links.root, url));
         }
       }
 
-      // process images
-      for (i = links.images.length - 1; i >= 0; i -= 1) {
-        url = links.images[i];
-        // Avoid images that are already data urls
-        if (url.indexOf('data:image') === -1) {
-          saveImage(tabid, url, fixurl(links.root, url));
-        }
-      }
-
-      // process stylesheets
-      for (i = links.stylesheets.length - 1; i >= 0; i -= 1) {
-        url = links.stylesheets[i];
-        processStyleSheets(tabid, url, fixurl(links.root, url));
-      }
     }
   });
 });
@@ -109,7 +115,6 @@ function cacheURL(tabid, key, url) {
 
 // Convert various formats to full urls
 
-
 function fixurl(url, imgurl) {
   var prefix = '';
   if (imgurl.indexOf('http://') === 0 || imgurl.indexOf('https://') === 0) {
@@ -127,7 +132,6 @@ function fixurl(url, imgurl) {
 }
 
 // convert image from url to dataurl
-
 
 function getImageDataURL(url, success, error) {
   var data, canvas, ctx, img = new Image();
@@ -152,4 +156,8 @@ function getImageDataURL(url, success, error) {
 
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
   delete globaldatastore[tabId];
+});
+
+chrome.browserAction.onClicked.addListener(function(tab) {
+  recording = !recording;
 });
