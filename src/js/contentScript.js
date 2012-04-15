@@ -1,18 +1,17 @@
 var offline = false;
 
-$(document).ready(function () {
-  console.log('Hello from Content Script');
-  sendRequest = function (data, callback) {
-    chrome.extension.sendRequest(data, callback);
-  };
-  chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
-    // console.log(sender.tab ?
-    //             'from a content script:' + sender.tab.url :
-    //             'from the extension');
-    console.log(request);
-    // sendResponse({ data: request.data });
+chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
+    if(request === 'recording') {
+      console.log('saving page');
+      savePage();
+    }
   });
 
+sendRequest = function (data, callback) {
+  chrome.extension.sendRequest(data, callback);
+};
+
+savePage = function() {
   var links = {
     root: window.location.href,
     anchors: [],
@@ -22,8 +21,31 @@ $(document).ready(function () {
 
   $('a').each(function (i, link) {
     links.anchors.push(link.href);
-  })
-  .live('click', function (event) {
+  });
+
+  // Save all images
+  $('img').each(function (i, img) {
+    links.images.push(img.src);
+  });
+
+  // Save all stylesheets
+  $('link').each(function (i, linktag) {
+    if ($(linktag).attr('rel') === 'stylesheet')
+      links.stylesheets.push(linktag.href);
+  });
+
+  sendRequest({
+    type: 'links',
+    data: links
+  }, function (response) {
+    // do nothing
+  });
+}
+
+$(document).ready(function () {
+  console.log('Hello from Content Script');
+
+  $('a').live('click', function (event) {
     if(offline){
         var url = event.target.href;
         sendRequest({
@@ -62,23 +84,5 @@ $(document).ready(function () {
         });
         event.preventDefault();
       }
-  });
-
-  // Save all images
-  $('img').each(function (i, img) {
-    links.images.push(img.src);
-  });
-
-  // Save all stylesheets
-  $('link').each(function (i, linktag) {
-    if ($(linktag).attr('rel') === 'stylesheet')
-      links.stylesheets.push(linktag.href);
-  });
-
-  sendRequest({
-    type: 'links',
-    data: links
-  }, function (response) {
-    // do nothing
   });
 });

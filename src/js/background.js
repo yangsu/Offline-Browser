@@ -154,10 +154,22 @@ function getImageDataURL(url, success, error) {
   }
 }
 
+function sendRecordingMessage() {
+  if(recording) {
+    sendRequest('recording');
+  }
+}
+
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
   delete globaldatastore[tabId];
 });
 
+chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
+  if(changeInfo.status === 'complete')
+    sendRecordingMessage();
+});
+
 chrome.browserAction.onClicked.addListener(function(tab) {
   recording = !recording;
+  sendRecordingMessage();
 });
