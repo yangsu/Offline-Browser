@@ -15,8 +15,7 @@
   // http://code.google.com/chrome/extensions/browserAction.html
   "browser_action": {
     "default_icon":  "icons/icon19.png", // optional
-    "default_title": "Action Title",     // optional; shown in tooltip
-    "default_popup": "src/popup.html"    // optional
+    "default_title": "Action Title"     // optional; shown in tooltip
   },
 
   // http://code.google.com/chrome/extensions/pageAction.html
