@@ -79,26 +79,31 @@
    ****************************************************************************/
 
   // http://code.google.com/chrome/extensions/background_pages.html */
-  "background_page": "src/background.html",
-
+  // "background_page": "src/background.html",
+  "background": {
+    "scripts": [
+      "lib/jquery.min.js",
+      "src/js/background.js"
+    ]
+  },
   // allow users to customize the behavior of your extension
   "options_page": "src/options.html",
 
   // http://code.google.com/chrome/extensions/content_scripts.html
   "content_scripts": [
-    {
-      "matches": [
-        "http://*/*",
-        "https://*/*"
-      ],
-      "css": [
-        "src/css/contentStyle.css"
-      ],
-      "js": [
-        "lib/jquery.min.js",
-        "src/js/contentScript.js"
-      ]
-    }
+  {
+    "matches": [
+      "http://*/*",
+      "https://*/*"
+    ],
+    "css": [
+      "src/css/contentStyle.css"
+    ],
+    "js": [
+      "lib/jquery.min.js",
+      "src/js/contentScript.js"
+    ]
+  }
   ],
 
   // http://code.google.com/chrome/extensions/npapi.html
