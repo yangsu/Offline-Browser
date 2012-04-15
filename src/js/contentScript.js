@@ -11,10 +11,15 @@ $(document).ready(function () {
     // sendResponse({ data: request.data });
   });
 
-  // initialize links first with the current page's url
-  var links = [ window.location.href ];
+  var links = {
+    root: window.location.href,
+    anchors: [],
+    images: [],
+    stylesheets: []
+  };
+
   $('a').each(function (i, link) {
-    links.push(link.href);
+    links.anchors.push(link.href);
   })
   .live('click', function (event) {
     var url = event.target.href;
@@ -29,9 +34,18 @@ $(document).ready(function () {
           $('img', document).each(function (i, img) {
             sendRequest({
               type: 'url',
-              data: url
+              data: img.src
             }, function (response) {
-              img.src = data.data;
+              img.src = response.data;
+            });
+          });
+          $('link', document).each(function (i, linktag) {
+            sendRequest({
+              type: 'url',
+              data: linktag.href
+            }, function (response) {
+              $('<style type="text/css">' + response.data + '</style>').appendTo('head');
+              $(this).remove();
             });
           });
         }
@@ -48,7 +62,13 @@ $(document).ready(function () {
 
   // Save all images
   $('img').each(function (i, img) {
-    links.push(img.src);
+    links.images.push(img.src);
+  });
+
+  // Save all stylesheets
+  $('link').each(function (i, linktag) {
+    if ($(linktag).attr('rel') === 'stylesheet')
+      links.stylesheets.push(linktag.href);
   });
 
   sendRequest({

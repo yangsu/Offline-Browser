@@ -17,57 +17,94 @@ $(document).ready(function () {
                 'from a content script:' + sender.tab.url :
                 'from the extension');
     console.log(request.data);
+    var tabid = sender.tab.id;
     if (request.type === 'url') {
       sendResponse({
-        data: globaldatastore[sender.tab.id][request.data]
+        data: globaldatastore[tabid][request.data]
       });
-    }
-    else if (request.type === 'links') {
+    } else if (request.type === 'links') {
       var links = request.data,
         i, l, url;
-      if (!globaldatastore[sender.tab.id])
-        globaldatastore[sender.tab.id] = {};
-      for (i = links.length - 1; i >= 0; i -= 1) {
-        url = links[i];
-        if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
-          cacheURL(sender.tab.id, url);
+
+      if (!globaldatastore[tabid]) {
+        globaldatastore[tabid] = {};
+      }
+
+      // root will always have the correct url format. No need to check
+      cacheURL(tabid, links.root, links.root);
+
+      // process anchors
+      for (i = links.anchors.length - 1; i >= 0; i -= 1) {
+        url = links.anchors[i];
+        if (url.indexOf('#') !== 0) {
+          cacheURL(tabid, url, fixurl(links.root, url));
         }
+      }
+
+      // process images
+      for (i = links.images.length - 1; i >= 0; i -= 1) {
+        url = links.images[i];
+        // Avoid images that are already data urls
+        if (url.indexOf('data:image') === -1) {
+          saveImage(tabid, url, fixurl(links.root, url));
+        }
+      }
+
+      // process stylesheets
+      for (i = links.stylesheets.length - 1; i >= 0; i -= 1) {
+        url = links.stylesheets[i];
+        processStyleSheets(tabid, url, fixurl(links.root, url));
       }
     }
   });
 });
 
-function saveImage (tabid, imgurl) {
-  if (!globaldatastore[tabid][imgurl]) {
+function processStyleSheets(tabid, key, url) {
+  if (!globaldatastore[tabid][key]) {
+    $.get(url, function (data) {
+      console.log(url);
+      console.log(data);
+      globaldatastore[tabid][key] = {
+        type: 'stylesheet',
+        data: data
+      };
+      // TODO process images in css?
+    });
+  }
+}
+
+function saveImage(tabid, key, imgurl) {
+  if (!globaldatastore[tabid][key]) {
     getImageDataURL(imgurl, function (dataurl) {
-      globaldatastore[tabid][imgurl] = {
+      globaldatastore[tabid][key] = {
         type: 'image',
         data: dataurl
       };
     });
   }
 }
-function cacheURL(tabid, url) {
-  if (!globaldatastore[tabid][url]) {
+
+function cacheURL(tabid, key, url) {
+  if (!globaldatastore[tabid][key]) {
     $.get(url, function (data) {
-      var ext = url.substring(url.lastIndexOf('.')+1);
+      var ext = url.substring(url.lastIndexOf('.') + 1);
       if (ext && ext.length === 3 && /jpg|png|gif/.test(ext)) {
-        saveImage(tabid, url);
-      }
-      else {
-        globaldatastore[tabid][url] = {
+        saveImage(tabid, key, url);
+      } else {
+        globaldatastore[tabid][key] = {
           type: 'html',
           data: data
         };
 
         // Scan all images on the page
         var regex = /<img[^>]+src="([^"]+)"/g,
-          match;
+          match,
+          imgkey;
         while (match = regex.exec(data)) {
+          imgkey = match[1];
           // Avoid images that are already data urls
-          if (match[1].indexOf('data:image') === -1) {
-            var imgurl = fixurl(url, match[1]);
-            saveImage(tabid, imgurl);
+          if (imgkey.indexOf('data:image') === -1) {
+            saveImage(tabid, imgkey, fixurl(url, imgkey));
           }
         }
       }
@@ -78,17 +115,15 @@ function cacheURL(tabid, url) {
 // Convert various formats to full urls
 function fixurl(url, imgurl) {
   var prefix = '';
-  if (imgurl.indexOf('http://') === 0 || imgurl.indexOf('https://') === 0)
+  if (imgurl.indexOf('http://') === 0 || imgurl.indexOf('https://') === 0) {
     return imgurl;
-  else if (imgurl.indexOf('//') === 0) {
+  } else if (imgurl.indexOf('//') === 0) {
     prefix = 'http:';
-  }
-  else if (imgurl.indexOf('/') === 0) {
+  } else if (imgurl.indexOf('/') === 0) {
     prefix = url.substring(0, url.indexOf('/', 8));
-  }
-  // if (imgurl.indexOf('..') === 0 || imgurl.indexOf('/') > 0)
-  // ../../a.jpg, aoeu/aoeu.jpg, abc.jpg
-  else {
+  } else {
+    // if (imgurl.indexOf('..') === 0 || imgurl.indexOf('/') > 0)
+    // ../../a.jpg, aoeu/aoeu.jpg, abc.jpg
     prefix = url.substring(0, url.lastIndexOf('/') + 1);
   }
   return prefix + imgurl;
@@ -96,9 +131,9 @@ function fixurl(url, imgurl) {
 
 // convert image from url to dataurl
 function getImageDataURL(url, success, error) {
-  var data, canvas, ctx;
-  var img = new Image();
-  img.onload = function (){
+  var data, canvas, ctx,
+    img = new Image();
+  img.onload = function () {
     canvas = document.createElement('canvas');
     canvas.width = img.width;
     canvas.height = img.height;
@@ -106,13 +141,13 @@ function getImageDataURL(url, success, error) {
     ctx.drawImage(img, 0, 0);
     try {
       success(canvas.toDataURL());
-    } catch(e){
+    } catch (e) {
       error(e);
     }
   };
   try {
     img.src = url;
-  } catch(e) {
+  } catch (e) {
     error(e);
   }
 }
