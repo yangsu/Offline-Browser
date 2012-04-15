@@ -16,7 +16,8 @@ $(document).ready(function () {
     sendResponse({ message: request.message });
   });
 
-  var links = [];
+  // initialize links first with the current page's url
+  var links = [ window.location.href ];
   $('a').each(function (num, link) {
     links.push(link.href);
   });
