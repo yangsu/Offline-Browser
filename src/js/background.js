@@ -7,10 +7,7 @@ $(document).ready(function () {
     chrome.tabs.getSelected(null, function (tab) {
       chrome.tabs.sendRequest(
         tab.id,
-        { message: data },
-        function (response) {
-          console.log(response.message);
-        }
+        data
       );
     });
   };
@@ -19,16 +16,22 @@ $(document).ready(function () {
     console.log(sender.tab ?
                 'from a content script:' + sender.tab.url :
                 'from the extension');
-    console.log(request.message);
-    var links = request.message,
-      i, l, url;
-    for (i = 0, l = links.length; i < l; i += 1) {
-      url = links[i];
-      if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
-        cacheURL(url);
+    console.log(request.data);
+    if (request.type === 'url') {
+      sendResponse({
+        data: globaldatastore[request.data]
+      });
+    }
+    else if (request.type === 'links') {
+      var links = request.data,
+        i, l, url;
+      for (i = 0, l = links.length; i < l; i += 1) {
+        url = links[i];
+        if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
+          cacheURL(url);
+        }
       }
     }
-    sendResponse({ message: request.message });
   });
 });
 
