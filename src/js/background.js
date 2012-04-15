@@ -19,24 +19,29 @@ $(document).ready(function () {
     console.log(request.data);
     if (request.type === 'url') {
       sendResponse({
-        data: globaldatastore[request.data]
+        data: globaldatastore[sender.tab.id][request.data]
       });
     }
     else if (request.type === 'links') {
       var links = request.data,
         i, l, url;
+      globaldatastore[sender.tab.id] = {};
       for (i = 0, l = links.length; i < l; i += 1) {
         url = links[i];
         if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
-          cacheURL(url);
+          cacheURL(sender.tab.id, url);
         }
       }
     }
   });
 });
 
-function cacheURL(url) {
+function cacheURL(tabid, url) {
   $.get(url, function (data) {
-    globaldatastore[url] = data;
+    globaldatastore[tabid][url] = data;
   });
 }
+
+chrome.tabs.onRemoved.addListener(function (tabId, removeInfo) {
+  delete globaldatastore[tabId];
+});

@@ -23,7 +23,8 @@ $(document).ready(function () {
       data: url
     }, function (response) {
       var data = response.data;
-      document.write(data);
+      if (data)
+        document.write(data);
     });
     event.preventDefault();
   });
