@@ -1,5 +1,4 @@
 {
-
   "name": "The Latest",
   "version": "0.1",
   "description": "Get the Latest news straight from your address bar",
@@ -28,58 +27,7 @@
     "default_popup": "src/popup.html"    // optional
   },
   */
-
-  // http://code.google.com/chrome/extensions/themes.html
-  /*
-  "theme": {
-    "images" : {
-      "theme_frame" : "images/theme_frame_camo.png",
-      "theme_frame_overlay" : "images/theme_frame_stripe.png",
-      "theme_toolbar" : "images/theme_toolbar_camo.png",
-      "theme_ntp_background" : "images/theme_ntp_background_norepeat.png",
-      "theme_ntp_attribution" : "images/attribution.png"
-    },
-    "colors" : {
-      "frame" : [71, 105, 91],
-      "toolbar" : [207, 221, 192],
-      "ntp_text" : [20, 40, 0],
-      "ntp_link" : [36, 70, 0],
-      "ntp_section" : [207, 221, 192],
-      "button_background" : [255, 255, 255]
-    },
-    "tints" : {
-      "buttons" : [0.33, 0.5, 0.47]
-    },
-    "properties" : {
-      "ntp_background_alignment" : "bottom"
-    }
-  }
-  */
-
-  // HOSTED APP
-  // http://code.google.com/chrome/apps/docs/developers_guide.html
-  // NOTE: Hosted apps have limited access to many features in this file
-  /*
-  "app": {
-    "urls": [
-      "*://mail.google.com/mail/",
-      "*://www.google.com/mail/"
-    ],
-    "launch": {
-      "web_url": "http://mail.google.com/mail/"
-    }
-  },
-  */
-
-  // PACKAGED APP
-  // http://code.google.com/chrome/extensions/apps.html
-  /*
-  "app": {
-    "launch": {
-      "local_path": "src/main.html"
-    }
-  },
-  */
+  "minimum_chrome_version": "14.0.835.202",
 
   /*****************************************************************************
    PERMISSIONS
@@ -120,7 +68,7 @@
 
   // http://code.google.com/chrome/extensions/override.html
   // pageToOverride is one of: bookmarks history newtab
-  // "chrome_url_overrides" : { "pageToOverride": "myPage.html", } 
+  // "chrome_url_overrides" : { "pageToOverride": "myPage.html", }
 
   // http://code.google.com/chrome/extensions/dev/experimental.devtools.html
   // Needs "experimental" permission
@@ -131,18 +79,27 @@
    ****************************************************************************/
 
   // http://code.google.com/chrome/extensions/background_pages.html */
-  // "background_page": "background.html",
+  "background_page": "src/background.html",
+
+  // allow users to customize the behavior of your extension
+  "options_page": "src/options.html",
 
   // http://code.google.com/chrome/extensions/content_scripts.html
-  /*
   "content_scripts": [
     {
-      "matches": ["http://www.google.com/*"],
-      "css": ["src/contentStyle.css"],
-      "js": ["lib/jquery.min.js", "src/contentScript.js"]
+      "matches": [
+        "http://*/*",
+        "https://*/*"
+      ],
+      "css": [
+        "src/css/contentStyle.css"
+      ],
+      "js": [
+        "lib/jquery.min.js",
+        "src/js/contentScript.js"
+      ]
     }
   ],
-  */
 
   // http://code.google.com/chrome/extensions/npapi.html
   /*
