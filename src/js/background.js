@@ -27,7 +27,7 @@ $(document).ready(function () {
         i, l, url;
       if (!globaldatastore[sender.tab.id])
         globaldatastore[sender.tab.id] = {};
-      for (i = 0, l = links.length; i < l; i += 1) {
+      for (i = links.length - 1; i >= 0; i -= 1) {
         url = links[i];
         if (url.indexOf('http://') === 0 || url.indexOf('https://') === 0) {
           cacheURL(sender.tab.id, url);
@@ -59,17 +59,23 @@ function cacheURL(tabid, url) {
           type: 'html',
           data: data
         };
+
+        // Scan all images on the page
         var regex = /<img[^>]+src="([^"]+)"/g,
           match;
         while (match = regex.exec(data)) {
-          var imgurl = fixurl(url, match[1]);
-          saveImage(tabid, imgurl);
+          // Avoid images that are already data urls
+          if (match[1].indexOf('data:image') === -1) {
+            var imgurl = fixurl(url, match[1]);
+            saveImage(tabid, imgurl);
+          }
         }
       }
     });
   }
 }
 
+// Convert various formats to full urls
 function fixurl(url, imgurl) {
   var prefix = '';
   if (imgurl.indexOf('http://') === 0 || imgurl.indexOf('https://') === 0)
@@ -88,6 +94,7 @@ function fixurl(url, imgurl) {
   return prefix + imgurl;
 }
 
+// convert image from url to dataurl
 function getImageDataURL(url, success, error) {
   var data, canvas, ctx;
   var img = new Image();
