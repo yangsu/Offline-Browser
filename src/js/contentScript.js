@@ -13,7 +13,7 @@ $(document).ready(function () {
 
   // initialize links first with the current page's url
   var links = [ window.location.href ];
-  $('a').each(function (num, link) {
+  $('a').each(function (i, link) {
     links.push(link.href);
   })
   .live('click', function (event) {
@@ -23,11 +23,34 @@ $(document).ready(function () {
       data: url
     }, function (response) {
       var data = response.data;
-      if (data)
-        document.write(data);
+      if (data) {
+        if (data.type === 'html') {
+          document.write(data.data);
+          $('img', document).each(function (i, img) {
+            sendRequest({
+              type: 'url',
+              data: url
+            }, function (response) {
+              img.src = data.data;
+            });
+          });
+        }
+        else if (data.type === 'image') {
+          document.write('');
+          var i = new Image();
+          i.src = data.data;
+          document.body.appendChild(i);
+        }
+      }
     });
     event.preventDefault();
   });
+
+  // Save all images
+  $('img').each(function (i, img) {
+    links.push(img.src);
+  });
+
   sendRequest({
     type: 'links',
     data: links
