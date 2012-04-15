@@ -23,8 +23,19 @@ $(document).ready(function () {
   });
 });
 
+function handleDOM(dom) {
+  var links = dom.getElementsByTagName('a'),
+    i, url;
+  for (i = 0; i < links.length; i += 1) {
+    url = links[i].getAttribute('href');
+    if (url.indexOf('http://') === 0 || url.indexOf('https://')) {
+      cacheURL(url);
+    }
+  }
+}
+
 function cacheURL(url) {
   $.get(url, function (data) {
-    console.log(data);
+    localStorage[url] = data;
   });
 }
