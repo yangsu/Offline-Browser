@@ -19,20 +19,17 @@ $(document).ready(function () {
                 'from a content script:' + sender.tab.url :
                 'from the extension');
     console.log(request.message);
+    var links = request.message,
+      i, l, url;
+    for (i = 0, l = links.length; i < l; i += 1) {
+      url = links[i];
+      if (url.indexOf('http://') === 0 || url.indexOf('https://')) {
+        cacheURL(url);
+      }
+    }
     sendResponse({ message: request.message });
   });
 });
-
-function handleDOM(dom) {
-  var links = dom.getElementsByTagName('a'),
-    i, url;
-  for (i = 0; i < links.length; i += 1) {
-    url = links[i].getAttribute('href');
-    if (url.indexOf('http://') === 0 || url.indexOf('https://')) {
-      cacheURL(url);
-    }
-  }
-}
 
 function cacheURL(url) {
   $.get(url, function (data) {

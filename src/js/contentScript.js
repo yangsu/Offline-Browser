@@ -15,5 +15,10 @@ $(document).ready(function () {
     console.log(request.message);
     sendResponse({ message: request.message });
   });
+
+  var links = [];
+  $('a').each(function (num, link) {
+    links.push(link.href);
+  });
+  sendRequest(links);
 });
-var aaa = '1';
