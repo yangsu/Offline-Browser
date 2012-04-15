@@ -35,7 +35,8 @@
 
   // http://code.google.com/chrome/extensions/manifest.html#permissions
   "permissions": [
-    "*://*.google.com", // Misc: http://goo.gl/CPeqK, XHR: http://goo.gl/U3Vev
+    "http://*/*", // Misc: http://goo.gl/CPeqK, XHR: http://goo.gl/U3Vev
+    "https://*/*", // Misc: http://goo.gl/CPeqK, XHR: http://goo.gl/U3Vev
     "bookmarks", // http://code.google.com/chrome/extensions/bookmarks.html
     "chrome://favicon/",
     "clipboardRead", // document.execCommand('paste').
