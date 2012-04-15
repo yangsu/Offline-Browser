@@ -160,6 +160,14 @@ function sendRecordingMessage() {
   }
 }
 
+function setIcon() {
+  if(!recording) {
+    chrome.browserAction.setIcon({path: 'icons/icon19.png'});
+  } else {
+    chrome.browserAction.setIcon({path: 'icons/icon19_r.png'});
+  }
+}
+
 chrome.tabs.onRemoved.addListener(function(tabId, removeInfo) {
   delete globaldatastore[tabId];
 });
@@ -171,5 +179,6 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   recording = !recording;
+  setIcon();
   sendRecordingMessage();
 });
