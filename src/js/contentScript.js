@@ -36,7 +36,7 @@ $(document).ready(function () {
           });
         }
         else if (data.type === 'image') {
-          document.write('');
+          document.write('<html><body></body></html>');
           var i = new Image();
           i.src = data.data;
           document.body.appendChild(i);
