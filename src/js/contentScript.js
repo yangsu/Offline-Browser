@@ -1,3 +1,5 @@
+var offline = false;
+
 $(document).ready(function () {
   console.log('Hello from Content Script');
   sendRequest = function (data, callback) {
@@ -22,42 +24,44 @@ $(document).ready(function () {
     links.anchors.push(link.href);
   })
   .live('click', function (event) {
-    var url = event.target.href;
-    sendRequest({
-      type: 'url',
-      data: url
-    }, function (response) {
-      var data = response.data;
-      if (data) {
-        if (data.type === 'html') {
-          document.write(data.data);
-          $('img', document).each(function (i, img) {
-            sendRequest({
-              type: 'url',
-              data: img.src
-            }, function (response) {
-              img.src = response.data;
-            });
-          });
-          $('link', document).each(function (i, linktag) {
-            sendRequest({
-              type: 'url',
-              data: linktag.href
-            }, function (response) {
-              $('<style type="text/css">' + response.data + '</style>').appendTo('head');
-              $(this).remove();
-            });
-          });
-        }
-        else if (data.type === 'image') {
-          document.write('<html><body></body></html>');
-          var i = new Image();
-          i.src = data.data;
-          document.body.appendChild(i);
-        }
+    if(offline){
+        var url = event.target.href;
+        sendRequest({
+          type: 'url',
+          data: url
+        }, function (response) {
+          var data = response.data;
+          if (data) {
+            if (data.type === 'html') {
+              document.write(data.data);
+              $('img', document).each(function (i, img) {
+                sendRequest({
+                  type: 'url',
+                  data: img.src
+                }, function (response) {
+                  img.src = response.data;
+                });
+              });
+              $('link', document).each(function (i, linktag) {
+                sendRequest({
+                  type: 'url',
+                  data: linktag.href
+                }, function (response) {
+                  $('<style type="text/css">' + response.data + '</style>').appendTo('head');
+                  $(this).remove();
+                });
+              });
+            }
+            else if (data.type === 'image') {
+              document.write('<html><body></body></html>');
+              var i = new Image();
+              i.src = data.data;
+              document.body.appendChild(i);
+            }
+          }
+        });
+        event.preventDefault();
       }
-    });
-    event.preventDefault();
   });
 
   // Save all images
