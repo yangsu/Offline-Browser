@@ -46,7 +46,7 @@ $(document).ready(function () {
   console.log('Hello from Content Script');
 
   $('a').live('click', function (event) {
-    if(offline){
+    if(!navigator.onLine){
         var url = event.target.href;
         sendRequest({
           type: 'url',

@@ -182,3 +182,6 @@ chrome.browserAction.onClicked.addListener(function(tab) {
   setIcon();
   sendRecordingMessage();
 });
+
+
+
