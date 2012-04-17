@@ -11,7 +11,7 @@ function parseUrl(url) {
 }
 
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
-    if(request === 'recording') {
+    if(request === 'recording' && navigator.onLine) {
       console.log('saving page');
       savePage();
     }
