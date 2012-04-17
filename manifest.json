@@ -1,7 +1,7 @@
 {
-  "name": "The Latest",
+  "name": "Offline Browser",
   "version": "0.1",
-  "description": "Get the Latest news straight from your address bar",
+  "description": "Caches URLs while you browse so you can browse while offline",
   "icons": { "16": "icons/icon16.png",
              "48": "icons/icon48.png",
             "128": "icons/icon128.png" },
@@ -15,7 +15,7 @@
   // http://code.google.com/chrome/extensions/browserAction.html
   "browser_action": {
     "default_icon":  "icons/icon19.png", // optional
-    "default_title": "Action Title"     // optional; shown in tooltip
+    "default_title": "Toggle Recording"     // optional; shown in tooltip
   },
 
   // http://code.google.com/chrome/extensions/pageAction.html
@@ -86,8 +86,8 @@
       "src/js/background.js"
     ]
   },
-  // allow users to customize the behavior of your extension
-  "options_page": "src/options.html",
+  // // allow users to customize the behavior of your extension
+  // "options_page": "src/options.html",
 
   // http://code.google.com/chrome/extensions/content_scripts.html
   "content_scripts": [
