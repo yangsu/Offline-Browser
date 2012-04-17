@@ -64,10 +64,10 @@ $(document).ready(function () {
           type: 'url',
           data: url
         }, function (response) {
-          var data = response.data;
+          var data = response;
           if (data) {
-            if (data.type === 'html') {
-              document.write(data.data);
+            if (data.type === 'mixed') {
+              document.write(data.html);
             }
             else if (data.type === 'image') {
               document.write('<html><body></body></html>');

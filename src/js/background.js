@@ -17,36 +17,39 @@ $(document).ready(function() {
     // console.log(request.data);
     var tabid = sender.tab.id;
     if (request.type === 'url') {
-      var requestedPage = globaldatastore[tabid][request.data].data;
+      var dataobj = globaldatastore[tabid][request.data];
+      if (dataobj.type === 'image')
+        return sendResponse(dataobj);
+      else {
+        var requestedPage = dataobj.data;
 
-      // // Save all stylesheets
-      // var regex = /<link[^>]+href="([^"]+\.css)"[^>]+>/g,
-      //   list = [];
-      // while (match = regex.exec(requestedPage)) {
-      //   list.push(match[1]);
-      // }
-      // // remove links
-      // requestedPage = requestedPage.replace(regex,'');
-      // list.forEach(function (i, link) {
-      //   if (link && link.indexOf('print') === -1) {
+        // // Save all stylesheets
+        var regex = /<link[^>]+href="([^"]+\.css)"[^>]+>/g,
+          stylesheets = [],
+          insertCss = function(match, link) {
+            if (link && link.indexOf('print') === -1) {
+              console.log(link);
+              return '<style type="text/css">' + globaldatastore[tabid][link].data + '</style>';
+            }
+            return '';
+          };
+        // remove links
+        requestedPage = requestedPage.replace(regex, insertCss);
 
-      //   }
-      // });
+        regex = /(<img[^>]+src=)"([^"]+)"/g,
+          convertImgs =  function (match, prefix, imgurl) {
+            console.log('convertImgs: '+imgurl);
+            return prefix+'"'+globaldatastore[tabid][imgurl].data+'"';
+          };
+        // replace all images on the page with data url
+        requestedPage = requestedPage.replace(regex, convertImgs);
 
-      var regex = /(<img[^>]+src=)"([^"]+)"/g,
-        convertImgs =  function (match, prefix, imgurl) {
-          console.log('convertImgs: '+imgurl);
-          return prefix+'"'+globaldatastore[tabid][imgurl].data+'"';
-        };
-      // replace all images on the page with data url
-      requestedPage = requestedPage.replace(regex, convertImgs);
-
-      sendResponse({
-        data: {
-          type: 'html',
-          data: requestedPage
-        }
-      });
+        sendResponse({
+          type: 'mixed',
+          html: requestedPage,
+          css: stylesheets
+        });
+      }
     } else if (request.type === 'links') {
 
       if (recording) {
