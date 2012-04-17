@@ -34,7 +34,7 @@ savePage = function() {
 
   $('a').each(function (i, link) {
     var location = parseUrl(link.href);
-    if(/(http(s)?):/.test(location.protocol) && link.href.indexOf('#') !== 0) {
+    if(/(http(s)?):/.test(location.protocol) && link.href.indexOf('#') !== 0 && link.href.indexOf('mailto:') === -1) {
       var id = 'anchor' + i;
       $(link).attr('id', id);
       $(link).css('color', 'red');
@@ -46,29 +46,18 @@ savePage = function() {
     }
   });
 
-  // Save all images
-  $('img').each(function (i, img) {
-    links.images.push(img.src);
-  });
-
-  // Save all stylesheets
-  $('link').each(function (i, linktag) {
-    if ($(linktag).attr('rel') === 'stylesheet')
-      links.stylesheets.push(linktag.href);
-  });
-
   sendRequest({
     type: 'links',
     data: links
   }, function (response) {
     // do nothing
   });
-}
+};
 
 $(document).ready(function () {
   console.log('Hello from Content Script');
 
-  $('a').live('click', function (event) {
+  $(document.body).delegate('a','click', function (event) {
     if(!navigator.onLine){
         var url = event.target.href;
         sendRequest({
@@ -106,6 +95,7 @@ $(document).ready(function () {
           }
         });
         event.preventDefault();
+        event.stopPropagation();
       }
   });
 });

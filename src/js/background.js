@@ -14,7 +14,7 @@ $(document).ready(function() {
 
   chrome.extension.onRequest.addListener(function(request, sender, sendResponse) {
     console.log(sender.tab ? 'from a content script:' + sender.tab.url : 'from the extension');
-    console.log(request.data);
+    // console.log(request.data);
     var tabid = sender.tab.id;
     if (request.type === 'url') {
       sendResponse({
@@ -40,21 +40,6 @@ $(document).ready(function() {
           anchor.href = fixurl(links.root, href);
           cacheURL(tabid, href, anchor, true);
         }
-
-        // process images
-        for (i = links.images.length - 1; i >= 0; i -= 1) {
-          url = links.images[i];
-          // Avoid images that are already data urls
-          if (url.indexOf('data:image') === -1) {
-            saveImage(tabid, url, fixurl(links.root, url));
-          }
-        }
-
-        // process stylesheets
-        for (i = links.stylesheets.length - 1; i >= 0; i -= 1) {
-          url = links.stylesheets[i];
-          processStyleSheets(tabid, url, fixurl(links.root, url));
-        }
       }
 
     }
@@ -64,13 +49,23 @@ $(document).ready(function() {
 function processStyleSheets(tabid, key, url) {
   if (!globaldatastore[tabid][key]) {
     $.get(url, function(data) {
-      console.log(url);
-      console.log(data);
+      console.log('stylesheets: '+url);
+      // console.log(data);
       globaldatastore[tabid][key] = {
         type: 'stylesheet',
         data: data
       };
       // TODO process images in css?
+      // Scan all images on the page
+      var regex = /url.*\(['"]?([^'"]+)['"]?\)/g,
+        match, imgkey;
+      while (match = regex.exec(data)) {
+        imgkey = match[1];
+        // Avoid images that are already data urls
+        if (imgkey.indexOf('data:image') === -1) {
+          saveImage(tabid, imgkey, fixurl(url, imgkey));
+        }
+      }
     });
   }
 }
@@ -78,6 +73,7 @@ function processStyleSheets(tabid, key, url) {
 function saveImage(tabid, key, imgurl) {
   if (!globaldatastore[tabid][key]) {
     getImageDataURL(imgurl, function(dataurl) {
+      console.log(imgurl);
       globaldatastore[tabid][key] = {
         type: 'image',
         data: dataurl
@@ -98,14 +94,23 @@ function cacheURL(tabid, key, anchor, notifySaved) {
           type: 'html',
           data: data
         };
+        var temp;
+
+        // Save all stylesheets
+        var regex = /<link[^>]+href="([^"]+\.css)?"/g;
+        while (match = regex.exec(data)) {
+          temp = match[1];
+          if (temp && temp.indexOf('print') === -1) {
+            processStyleSheets(tabid, temp, fixurl(url, temp));
+          }
+        }
 
         // Scan all images on the page
-        var regex = /<img[^>]+src="([^"]+)"/g,
-          match, imgkey;
+        regex = /<img[^>]+src="([^"]+)"/g;
         while (match = regex.exec(data)) {
           imgkey = match[1];
           // Avoid images that are already data urls
-          if (imgkey.indexOf('data:image') === -1) {
+          if (imgkey && imgkey.indexOf('data:image') === -1) {
             saveImage(tabid, imgkey, fixurl(url, imgkey));
           }
         }
