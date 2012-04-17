@@ -25,11 +25,23 @@ $(document).ready(function() {
 
         // // Save all stylesheets
         var regex = /<link[^>]+href="([^"]+\.css)"[^>]+>/g,
-          stylesheets = [],
+          convertImgs =  function (match, prefix, ignore, imgurl) {
+            // console.log('convertImgs: '+imgurl);
+            var imgdata;
+            if (/jpg|png|gif/.test(imgurl)) {
+              imgdata = globaldatastore[tabid][imgurl].data;
+            } else {
+              imgdata = imgurl;
+            }
+            return prefix+'('+imgdata+')';
+          },
           insertCss = function(match, link) {
             if (link && link.indexOf('print') === -1) {
-              console.log(link);
-              return '<style type="text/css">' + globaldatastore[tabid][link].data + '</style>';
+              // console.log(link);
+              var css = globaldatastore[tabid][link].data,
+              imgregex = /((background|background-image)\s*\:\s*url.*)\(['"]?([^\)'"]+)['"]?\)/g;
+              css = css.replace(imgregex, convertImgs);
+              return '<style type="text/css">' + css + '</style>';
             }
             return '';
           };
@@ -38,7 +50,7 @@ $(document).ready(function() {
 
         regex = /(<img[^>]+src=)"([^"]+)"/g,
           convertImgs =  function (match, prefix, imgurl) {
-            console.log('convertImgs: '+imgurl);
+            // console.log('convertImgs: '+imgurl);
             return prefix+'"'+globaldatastore[tabid][imgurl].data+'"';
           };
         // replace all images on the page with data url
@@ -47,7 +59,7 @@ $(document).ready(function() {
         sendResponse({
           type: 'mixed',
           html: requestedPage,
-          css: stylesheets
+          css: []
         });
       }
     } else if (request.type === 'links') {
@@ -79,7 +91,7 @@ $(document).ready(function() {
 function processStyleSheets(tabid, key, url) {
   if (!globaldatastore[tabid][key]) {
     $.get(url, function(data) {
-      console.log('stylesheets: '+url);
+      // console.log('stylesheets: '+url);
       // console.log(data);
       globaldatastore[tabid][key] = {
         type: 'stylesheet',
@@ -87,15 +99,14 @@ function processStyleSheets(tabid, key, url) {
       };
       // TODO process images in css?
       // Scan all images on the page
-      // var regex = /url.*\(['"]?([^\)]+)['"]?\)/g,
-      //   match, imgkey;
-      // while (match = regex.exec(data)) {
-      //   imgkey = match[1];
-      //   // Avoid images that are already data urls
-      //   if (imgkey.indexOf('data:image') === -1) {
-      //     saveImage(tabid, imgkey, fixurl(url, imgkey));
-      //   }
-      // }
+      var regex = /(background|background-image)\s*\:\s*url.*\(['"]?([^\)'"]+)['"]?\)/g,
+        match, imgkey;
+      while (match = regex.exec(data)) {
+        imgkey = match[2];
+        if (/jpg|png|gif/.test(imgkey)) {
+          saveImage(tabid, imgkey, fixurl(url, imgkey));
+        }
+      }
     });
   }
 }
@@ -103,7 +114,7 @@ function processStyleSheets(tabid, key, url) {
 function saveImage(tabid, key, imgurl) {
   if (!globaldatastore[tabid][key]) {
     getImageDataURL(imgurl, function(dataurl) {
-      console.log(imgurl);
+      // console.log(imgurl);
       globaldatastore[tabid][key] = {
         type: 'image',
         data: dataurl
