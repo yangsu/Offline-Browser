@@ -1,9 +1,16 @@
 var offline = false;
 
+function markLinkSaved(id) {
+  $('#' + id).css('color', 'green');
+}
+
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
     if(request === 'recording') {
       console.log('saving page');
       savePage();
+    }
+    else if(request.indexOf('anchor') === 0) {
+      markLinkSaved(request);
     }
   });
 
@@ -20,7 +27,14 @@ savePage = function() {
   };
 
   $('a').each(function (i, link) {
-    links.anchors.push(link.href);
+    var id = 'anchor' + i;
+    $(link).attr('id', id);
+    $(link).css('color', 'red');
+    var obj = {
+      href: link.href,
+      id: id
+    };
+    links.anchors.push(obj);
   });
 
   // Save all images

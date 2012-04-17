@@ -31,13 +31,15 @@ $(document).ready(function() {
         }
 
         // root will always have the correct url format. No need to check
-        cacheURL(tabid, links.root, links.root);
+        cacheURL(tabid, links.root, links.root, false);
 
         // process anchors
         for (i = links.anchors.length - 1; i >= 0; i -= 1) {
-          url = links.anchors[i];
-          if (url.indexOf('#') !== 0) {
-            cacheURL(tabid, url, fixurl(links.root, url));
+          anchor = links.anchors[i];
+          if (anchor.href.indexOf('#') !== 0) {
+            var href = anchor.href;
+            anchor.href = fixurl(links.root, href);
+            cacheURL(tabid, href, anchor, true);
           }
         }
 
@@ -86,8 +88,9 @@ function saveImage(tabid, key, imgurl) {
   }
 }
 
-function cacheURL(tabid, key, url) {
+function cacheURL(tabid, key, anchor, notifySaved) {
   if (!globaldatastore[tabid][key]) {
+    var url = anchor.href;
     $.get(url, function(data) {
       var ext = url.substring(url.lastIndexOf('.') + 1);
       if (ext && ext.length === 3 && /jpg|png|gif/.test(ext)) {
@@ -107,6 +110,9 @@ function cacheURL(tabid, key, url) {
           if (imgkey.indexOf('data:image') === -1) {
             saveImage(tabid, imgkey, fixurl(url, imgkey));
           }
+        }
+        if(notifySaved) {
+          sendRequest(anchor.id);
         }
       }
     });
