@@ -17,8 +17,35 @@ $(document).ready(function() {
     // console.log(request.data);
     var tabid = sender.tab.id;
     if (request.type === 'url') {
+      var requestedPage = globaldatastore[tabid][request.data].data;
+
+      // // Save all stylesheets
+      // var regex = /<link[^>]+href="([^"]+\.css)"[^>]+>/g,
+      //   list = [];
+      // while (match = regex.exec(requestedPage)) {
+      //   list.push(match[1]);
+      // }
+      // // remove links
+      // requestedPage = requestedPage.replace(regex,'');
+      // list.forEach(function (i, link) {
+      //   if (link && link.indexOf('print') === -1) {
+
+      //   }
+      // });
+
+      var regex = /(<img[^>]+src=)"([^"]+)"/g,
+        convertImgs =  function (match, prefix, imgurl) {
+          console.log('convertImgs: '+imgurl);
+          return prefix+'"'+globaldatastore[tabid][imgurl].data+'"';
+        };
+      // replace all images on the page with data url
+      requestedPage = requestedPage.replace(regex, convertImgs);
+
       sendResponse({
-        data: globaldatastore[tabid][request.data]
+        data: {
+          type: 'html',
+          data: requestedPage
+        }
       });
     } else if (request.type === 'links') {
 
@@ -57,15 +84,15 @@ function processStyleSheets(tabid, key, url) {
       };
       // TODO process images in css?
       // Scan all images on the page
-      var regex = /url.*\(['"]?([^'"]+)['"]?\)/g,
-        match, imgkey;
-      while (match = regex.exec(data)) {
-        imgkey = match[1];
-        // Avoid images that are already data urls
-        if (imgkey.indexOf('data:image') === -1) {
-          saveImage(tabid, imgkey, fixurl(url, imgkey));
-        }
-      }
+      // var regex = /url.*\(['"]?([^\)]+)['"]?\)/g,
+      //   match, imgkey;
+      // while (match = regex.exec(data)) {
+      //   imgkey = match[1];
+      //   // Avoid images that are already data urls
+      //   if (imgkey.indexOf('data:image') === -1) {
+      //     saveImage(tabid, imgkey, fixurl(url, imgkey));
+      //   }
+      // }
     });
   }
 }
