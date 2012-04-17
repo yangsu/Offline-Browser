@@ -36,11 +36,9 @@ $(document).ready(function() {
         // process anchors
         for (i = links.anchors.length - 1; i >= 0; i -= 1) {
           anchor = links.anchors[i];
-          if (anchor.href.indexOf('#') !== 0) {
-            var href = anchor.href;
-            anchor.href = fixurl(links.root, href);
-            cacheURL(tabid, href, anchor, true);
-          }
+          var href = anchor.href;
+          anchor.href = fixurl(links.root, href);
+          cacheURL(tabid, href, anchor, true);
         }
 
         // process images

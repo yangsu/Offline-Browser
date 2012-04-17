@@ -4,6 +4,12 @@ function markLinkSaved(id) {
   $('#' + id).css('color', 'green');
 }
 
+function parseUrl(url) {
+  var a = document.createElement('a');
+  a.href = url;
+  return a;
+}
+
 chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
     if(request === 'recording') {
       console.log('saving page');
@@ -27,14 +33,17 @@ savePage = function() {
   };
 
   $('a').each(function (i, link) {
-    var id = 'anchor' + i;
-    $(link).attr('id', id);
-    $(link).css('color', 'red');
-    var obj = {
-      href: link.href,
-      id: id
-    };
-    links.anchors.push(obj);
+    var location = parseUrl(link.href);
+    if(/(http(s)?):/.test(location.protocol) && link.href.indexOf('#') !== 0) {
+      var id = 'anchor' + i;
+      $(link).attr('id', id);
+      $(link).css('color', 'red');
+      var obj = {
+        href: link.href,
+        id: id
+      };
+      links.anchors.push(obj);
+    }
   });
 
   // Save all images
