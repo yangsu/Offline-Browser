@@ -54,31 +54,38 @@ savePage = function() {
   });
 };
 
-$(document).ready(function () {
-  console.log('Hello from Content Script');
+function updateContent(data) {
+  if (data) {
+    if (data.type === 'mixed') {
+      document.write(data.html);
+    }
+    else if (data.type === 'image') {
+      document.write('<html><body></body></html>');
+      var i = new Image();
+      i.src = data.data;
+      document.body.appendChild(i);
+    }
+  }
+}
 
-  $(document.body).delegate('a','click', function (event) {
-    if(!navigator.onLine){
-        var url = event.target.href;
-        sendRequest({
-          type: 'url',
-          data: url
-        }, function (response) {
-          var data = response;
-          if (data) {
-            if (data.type === 'mixed') {
-              document.write(data.html);
-            }
-            else if (data.type === 'image') {
-              document.write('<html><body></body></html>');
-              var i = new Image();
-              i.src = data.data;
-              document.body.appendChild(i);
-            }
-          }
-        });
-        event.preventDefault();
-        event.stopPropagation();
-      }
+$(document).ready(function () {
+  $('body').delegate('a','click', function (event) {
+    if (!navigator.onLine) {
+      var url = event.target.href;
+      sendRequest({
+        type: 'url',
+        data: url
+      }, function (response) {
+        history.pushState(response, event.target.href, '/'+event.target.href);
+        updateContent(response);
+      });
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
+
+  var popped = ('state' in window.history), initialURL = location.href;
+  $(window).bind('popstate', function(event){
+    updateContent(event.state);
   });
 });
