@@ -73,7 +73,7 @@ $(document).ready(function() {
         }
 
         // root will always have the correct url format. No need to check
-        cacheURL(tabid, links.root, links.root, false);
+        cacheURL(tabid, links.root, {href:links.root}, false);
 
         // process anchors
         for (i = links.anchors.length - 1; i >= 0; i -= 1) {
@@ -126,11 +126,11 @@ function saveImage(tabid, key, imgurl) {
 function cacheURL(tabid, key, anchor, notifySaved) {
   if (!globaldatastore[tabid][key]) {
     var url = anchor.href;
-    $.get(url, function(data) {
-      var ext = url.substring(url.lastIndexOf('.') + 1);
-      if (ext && ext.length === 3 && /jpg|png|gif/.test(ext)) {
-        saveImage(tabid, key, url);
-      } else {
+    console.log(url);
+    if (/\.(jpg|png|gif)/.test(url)) {
+      saveImage(tabid, key, url);
+    } else {
+      $.get(url, function(data) {
         globaldatastore[tabid][key] = {
           type: 'html',
           data: data
@@ -158,8 +158,8 @@ function cacheURL(tabid, key, anchor, notifySaved) {
         if(notifySaved) {
           sendRequest(anchor.id);
         }
-      }
-    });
+      });
+    }
   }
 }
 
